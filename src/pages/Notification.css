@@ -1,0 +1,100 @@
+/* simple styles (put in your CSS file) */
+
+.notification-page {
+  background: #ffffff;
+  width: 100vw;
+  height: 100vh;
+}
+
+.msg-form-card {
+  width: 680px;
+  margin: 32px auto;
+  background: #ffffff;
+  border-radius: 12px;
+  text-align: center;
+  padding: 20px;
+  box-shadow: 0 6px 18px rgba(16, 24, 40, 0.06);
+  /* background-color: #ffffff; */
+  font-family: Inter, Poppins, system-ui, -apple-system, "Segoe UI", Roboto;
+}
+
+.page-title {
+  margin: 0 0 12px;
+  font-size: 20px;
+  color: #0f172a;
+}
+
+.msg-form .field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+  color: #0f172a;
+  text-align: left;
+}
+
+.msg-form input,
+.msg-form textarea {
+  border: 1px solid #e6edf3;
+  background-color: #ffffff;
+  color: #0f172a;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+}
+
+.msg-form input:focus,
+.msg-form textarea:focus {
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08);
+  border-color: #2563eb;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.send-btn {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.send-btn[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.status {
+  margin-top: 12px;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.status.ok {
+  background: #ecfdf5;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.status.err {
+  background: #fff1f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.preview {
+  margin: 10px 0;
+}
+
+.preview img {
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  object-fit: cover;
+}
