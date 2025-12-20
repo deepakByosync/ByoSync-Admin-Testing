@@ -84,13 +84,7 @@ const Notification = () => {
       // const data = await res.json();
       // console.log("data", data);
 
-      if (res.ok) {
-        // handle server error message if present
-        setStatus({
-          type: "error",
-          text: res?.data?.message || "Server error. Try again.",
-        });
-      } else {
+      if (res.status === 200) {
         setStatus({
           type: "success",
           text: res?.data?.message || "Message sent successfully!",
@@ -98,6 +92,11 @@ const Notification = () => {
         setTitle("");
         setMessage("");
         setImage("");
+      } else {
+        setStatus({
+          type: "error",
+          text: res?.data?.message || "Server error. Try again.",
+        });
       }
     } catch (err) {
       console.error(err);

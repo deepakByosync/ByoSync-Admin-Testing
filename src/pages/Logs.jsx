@@ -20,13 +20,6 @@ const Logs = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const auth = localStorage.getItem("auth") === "true";
-    if (!auth) {
-      navigate("/");
-    }
-  }, [navigate]);
-
-  useEffect(() => {
     const fetchLogs = async () => {
       setLoading(true);
       try {

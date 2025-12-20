@@ -17,13 +17,6 @@ const ShopkeeperDetails = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const auth = localStorage.getItem("auth") === "true";
-    if (!auth) {
-      navigate("/");
-    }
-  }, [navigate]);
-
   // Get userId from query param
   const queryParams = new URLSearchParams(location.search);
   const userId = queryParams.get("userId");
@@ -31,6 +24,7 @@ const ShopkeeperDetails = () => {
   useEffect(() => {
     // ye function tab chalega jab page (component) load hoga
     const fetchUsers = async () => {
+      if (!userId) return;
       setLoading(true);
       try {
         const res = await axios.post(
@@ -52,7 +46,7 @@ const ShopkeeperDetails = () => {
       }
     };
     fetchUsers();
-  }, [filter, page]);
+  }, [userId, filter, page]);
 
   useEffect(() => {
     if (message) {
@@ -72,12 +66,14 @@ const ShopkeeperDetails = () => {
 
   const COLORS = ["#ef4444", "#22c55e", "#ff00c3ff"];
 
-  const getPieData = (stats) => [
-    // { name: "API Calls", value: stats.api },
-    { name: "Error", value: stats.server_error },
-    { name: "Success", value: stats.success },
-    { name: "Bad Request", value: stats.bad_request },
-  ];
+  const getPieData = (stats) => {
+    if (!stats) return [];
+    return [
+      { name: "Error", value: stats.server_error || 0 },
+      { name: "Success", value: stats.success || 0 },
+      { name: "Bad Request", value: stats.bad_request || 0 },
+    ];
+  };
 
   if (!user) {
     return (
@@ -91,15 +87,16 @@ const ShopkeeperDetails = () => {
       </>
     );
   }
-  const total =
-    user?.performance.success +
-    user?.performance.server_error +
-    user?.performance.bad_request;
-  const successPercent = ((user?.performance.success / total) * 100).toFixed(0);
-  const badPercent = ((user?.performance.bad_request / total) * 100).toFixed(0);
-  const errorPercent = ((user?.performance.server_error / total) * 100).toFixed(
-    0
-  );
+  
+  // Calculate percentages safely
+  const success = user?.performance?.success || 0;
+  const serverError = user?.performance?.server_error || 0;
+  const badRequest = user?.performance?.bad_request || 0;
+  const total = success + serverError + badRequest;
+  
+  const successPercent = total > 0 ? ((success / total) * 100).toFixed(0) : "0";
+  const badPercent = total > 0 ? ((badRequest / total) * 100).toFixed(0) : "0";
+  const errorPercent = total > 0 ? ((serverError / total) * 100).toFixed(0) : "0";
 
   return (
     <>
@@ -118,23 +115,25 @@ const ShopkeeperDetails = () => {
           <p className="subtitle">Detailed profile and financial summary.</p>
           <div className="info-grid">
             <div>
-              <strong>Name:</strong> {decrypt(user?.firstName)}
-              {decrypt(user?.lastName)}
+              <strong>Name:</strong> {decrypt(user?.firstName || '')} {decrypt(user?.lastName || '')}
             </div>
 
             {/* <div>
               <strong>User ID:</strong> {user?.userId}
             </div> */}
             <div>
-              <strong>Email:</strong> {decrypt(user?.email)}
+              <strong>Email:</strong> {decrypt(user?.email || '')}
             </div>
             <div>
+              <strong>Total Chai:</strong> {user?.chai}
+            </div>
+            {/* <div>
               <strong>Total Transactions:</strong> {user?.totalTransactions}
             </div>
             <div>
               <strong>Total Coins Paid by User:</strong>{" "}
               {user?.totalTransactionCoins}
-            </div>
+            </div> */}
           </div>
         </div>
 

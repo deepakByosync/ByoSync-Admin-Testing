@@ -10,13 +10,6 @@ const Dashboard = () => {
   const [stats, setStats] = useState(null);
 
   useEffect(() => {
-    const auth = localStorage.getItem("auth") === "true";
-    if (!auth) {
-      navigate("/");
-    }
-  }, [navigate]);
-
-  useEffect(() => {
     // ye function tab chalega jab page (component) load hoga
     const fetchStats = async () => {
       try {
@@ -51,13 +44,17 @@ const Dashboard = () => {
               <strong>{stats?.totalUsers}</strong>
             </div>
             <div className="panel-row">
+              <span>Total Chai</span>
+              <strong>{stats?.totalChai}</strong>
+            </div>
+            {/* <div className="panel-row">
               <span>Total Transactions</span>
               <strong>{stats?.totalTransactions}</strong>
             </div>
             <div className="panel-row">
               <span>Paid by Users</span>
               <strong>₹ {stats?.totalAmount}</strong>
-            </div>
+            </div> */}
             <button
               className="view-btn"
               onClick={() => navigate("/top-users?userType=user")}
@@ -76,21 +73,12 @@ const Dashboard = () => {
               >
                 Back End
               </button>
-              {/* </div>
-            <div className="panel-row"> */}
+
               <button
                 className="view-btn"
                 onClick={() => navigate("/logs?log=APP")}
               >
                 APP
-              </button>
-              {/* </div>
-            <div className="panel-row"> */}
-              <button
-                className="view-btn"
-                onClick={() => navigate("/logs?log=ML")}
-              >
-                ML
               </button>
             </div>
           </div>

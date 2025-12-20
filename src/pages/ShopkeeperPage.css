@@ -1,21 +1,22 @@
 .shopkeeper-containers {
   display: flex;
-  /* flex-direction: column; */
   flex-wrap: wrap;
   gap: 24px;
-  padding: 20px;
+  padding: 30px 60px;
   justify-content: center;
-  background: #f9fafb;
-  width: 96.2vw;
+  background: #fafafa;
+  width: 100%;
+  box-sizing: border-box;
   color: black;
   min-height: 100vh;
+  font-family: "Poppins", sans-serif;
 }
 
 .shop-card {
   background: #fff;
-  border-radius: 16px;
+  border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  padding: 20px;
+  padding: 24px;
   width: 600px;
 }
 
@@ -82,4 +83,34 @@
 
 .type {
   width: 20%;
+}
+
+.view-btn {
+  margin-top: 20px;
+  width: 100%;
+  background: #007aff;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.view-btn:hover {
+  background: #0062cc;
+}
+
+.activity-table th {
+  background-color: #f3f4f6;
+  color: #374151;
+  font-weight: 600;
+  padding: 12px 10px;
+}
+
+.activity-table td {
+  color: #4b5563;
+  padding: 12px 10px;
 }

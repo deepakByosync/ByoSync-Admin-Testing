@@ -1,9 +1,10 @@
 /* simple styles (put in your CSS file) */
 
 .notification-page {
-  background: #ffffff;
+  background: #fafafa;
   width: 100vw;
-  height: 100vh;
+  min-height: 100vh;
+  font-family: "Poppins", sans-serif;
 }
 
 .msg-form-card {
@@ -12,10 +13,9 @@
   background: #ffffff;
   border-radius: 12px;
   text-align: center;
-  padding: 20px;
-  box-shadow: 0 6px 18px rgba(16, 24, 40, 0.06);
-  /* background-color: #ffffff; */
-  font-family: Inter, Poppins, system-ui, -apple-system, "Segoe UI", Roboto;
+  padding: 32px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  font-family: "Poppins", sans-serif;
 }
 
 .page-title {

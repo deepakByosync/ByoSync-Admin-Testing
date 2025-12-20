@@ -1,22 +1,22 @@
-import React, { useState, useEffect, use } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { useAuth } from "../context/AuthContext";
 import "./LoginPage.css";
-import { env } from "../utils/config.js";
-// `${env.BASE_URL}
+
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
-
+  const { isAuthenticated, login, loading } = useAuth();
   const navigate = useNavigate();
-  // LOGIN API CALL
+
+  // Redirect if already authenticated
   useEffect(() => {
-    const auth = localStorage.getItem("auth") === "true";
-    if (auth) {
+    if (isAuthenticated && !loading) {
       navigate("/dashboard");
     }
-  }, [navigate]);
+  }, [isAuthenticated, loading, navigate]);
+
   const handleLogin = async () => {
     if (!password.trim() && !email.trim()) {
       setMessage("Please enter ByoSync email and password");
@@ -24,47 +24,24 @@ const LoginPage = () => {
     }
     let regex = /^[a-zA-Z0-9._%+-]+@byosync.in$/;
     if (!regex.test(email)) {
-      console.log("Invalid Email address");
       setMessage("Invalid Email address");
       return;
     }
 
     if (!password.trim()) {
-      console.log("Please enter Password");
       setMessage("Please enter Password");
       return;
     }
 
     if (!email.trim()) {
-      console.log("Please enter your email");
       setMessage("Please enter ByoSync email");
-
       return;
     }
 
-    console.log("email", email);
-    console.log("pass", password);
-    try {
-      const response = await axios.post(
-        `${env.BASE_URL}/admin/admin-login`,
-        { email, password },
-        {
-          withCredentials: true,
-        }
-      );
-      console.log("response", response);
-
-      if (response.status === 200) {
-        console.log("Navigating to dashboard...");
-        localStorage.setItem("auth", true);
-        setMessage("Login Successful!");
-        navigate("/dashboard");
-      }
-      setMessage(response.response.data.message);
-    } catch (error) {
-      console.error(error);
-      setMessage(error.response.data.message);
-      // setMessage(error.response?.data?.error || "Something went wrong!");
+    const result = await login(email, password);
+    setMessage(result.message);
+    if (result.success) {
+      navigate("/dashboard");
     }
   };
 

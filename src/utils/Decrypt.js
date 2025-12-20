@@ -35,10 +35,29 @@ const KEY = CryptoJS.PBKDF2(PASSWORD, CryptoJS.enc.Utf8.parse(SALT), {
 
 export default function decrypt(encryptedData) {
     try {
+        // Check if encryptedData is valid
+        if (!encryptedData || typeof encryptedData !== 'string' || encryptedData.trim() === '') {
+            console.log("Encrypted data is empty or invalid:", encryptedData);
+            return '';
+        }
+
         const start = new Date();
         console.log("Encrypted:", encryptedData);
 
+        // Check if data contains the required separator
+        if (!encryptedData.includes(':')) {
+            console.log("Invalid encrypted data format - missing separator");
+            return encryptedData; // Return as is if not encrypted
+        }
+
         const [ivHex, dataHex] = encryptedData.split(":");
+        
+        // Validate both parts exist
+        if (!ivHex || !dataHex) {
+            console.log("Invalid encrypted data format - missing IV or data");
+            return encryptedData; // Return as is if invalid format
+        }
+
         const iv = CryptoJS.enc.Hex.parse(ivHex);
 
         const decrypted = CryptoJS.AES.decrypt(
@@ -48,13 +67,21 @@ export default function decrypt(encryptedData) {
         );
 
         const plaintext = decrypted.toString(CryptoJS.enc.Utf8);
+        
+        // If decryption resulted in empty string, return original
+        if (!plaintext || plaintext.trim() === '') {
+            console.log("Decryption resulted in empty string, returning original");
+            return encryptedData;
+        }
+        
         console.log("Decrypted:", plaintext);
         const end = new Date();
         console.log(`Decryption took ${end - start} ms`);
         return plaintext;
     } catch (err) {
         console.error("Decryption error:", err);
-        return null;
+        // Return original data if decryption fails
+        return encryptedData || '';
     }
 }
 

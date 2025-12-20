@@ -11,14 +11,6 @@ import { env } from "../utils/config.js";
 const TopUsersPage = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    const auth = localStorage.getItem("auth") === "true";
-    if (!auth) {
-      navigate("/");
-    }
-  }, [navigate]);
-
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const userType = queryParams.get("userType"); // e.g., "merchant"
@@ -48,12 +40,14 @@ const TopUsersPage = () => {
   //   console.log(user);
   // }, [user]);
 
-  const getPieData = (stats) => [
-    // { name: "API Calls", value: stats.api },
-    { name: "Error", value: stats.server_error },
-    { name: "Success", value: stats.success },
-    { name: "Bad Request", value: stats.bad_request },
-  ];
+  const getPieData = (stats) => {
+    if (!stats) return [];
+    return [
+      { name: "Error", value: stats.server_error || 0 },
+      { name: "Success", value: stats.success || 0 },
+      { name: "Bad Request", value: stats.bad_request || 0 },
+    ];
+  };
 
   if (!user) {
     return (
@@ -73,28 +67,21 @@ const TopUsersPage = () => {
 
       <div className="shopkeeper-containers">
         {user?.topUsers.map((shop) => {
-          const total =
-            shop.performance.success +
-            shop.performance.server_error +
-            shop.performance.bad_request;
-          const successPercent = (
-            (shop.performance.success / total) *
-            100
-          ).toFixed(0);
-          const errorPercent = (
-            (shop.performance.server_error / total) *
-            100
-          ).toFixed(0);
-          const badPercent = (
-            (shop.performance.bad_request / total) *
-            100
-          ).toFixed(0);
-          // const apiPercent = ((shop.performance.api / total) * 100).toFixed(0);
+          // Calculate percentages safely
+          const success = shop.performance?.success || 0;
+          const serverError = shop.performance?.server_error || 0;
+          const badRequest = shop.performance?.bad_request || 0;
+          const total = success + serverError + badRequest;
+          
+          const successPercent = total > 0 ? ((success / total) * 100).toFixed(0) : "0";
+          const errorPercent = total > 0 ? ((serverError / total) * 100).toFixed(0) : "0";
+          const badPercent = total > 0 ? ((badRequest / total) * 100).toFixed(0) : "0";
+          // const apiPercent = total > 0 ? ((shop.performance?.api || 0) / total * 100).toFixed(0) : "0";
 
           return (
             <div key={shop.id} className="shop-card">
               <h3 className="shop-name">
-                {decrypt(shop.firstName)} {decrypt(shop.lastName)}
+                {decrypt(shop.firstName || '')} {decrypt(shop.lastName || '')}
               </h3>
               <div className="chart-section">
                 <PieChart width={230} height={230}>

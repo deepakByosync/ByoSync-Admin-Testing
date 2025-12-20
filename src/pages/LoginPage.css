@@ -47,9 +47,11 @@
   background: #fff;
   padding: 50px 60px;
   border-radius: 12px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   text-align: center;
-  width: 300px;
+  width: 100%;
+  max-width: 400px;
+  box-sizing: border-box;
 }
 
 /* Logo and brand */
@@ -88,18 +90,21 @@
 }
 
 .input-group input {
-  width: 270px;
-  padding: 12px 12px 12px 12px;
-  /* border: 1px solid #353535; */
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
   border-radius: 6px;
   font-size: 14px;
   outline: none;
   color: #000;
   background: #ffffff;
+  box-sizing: border-box;
+  transition: border-color 0.3s;
 }
 
 .input-group input:focus {
-  border-color: #5a30ff;
+  border-color: #007aff;
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
 }
 
 /* Forgot password link */

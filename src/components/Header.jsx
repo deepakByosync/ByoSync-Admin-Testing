@@ -1,22 +1,13 @@
 import React from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { env } from "../utils/config.js";
+import { useAuth } from "../context/AuthContext";
 
 const Header = () => {
   const navigate = useNavigate();
+  const { logout } = useAuth();
+  
   const handleLogout = async () => {
-    console.log("Logout clicked!");
-
-    const response = await axios.post(
-      `${env.BASE_URL}/admin/admin-logout`,
-      {},
-      {
-        withCredentials: true,
-      }
-    );
-    localStorage.removeItem("auth");
-    console.log("response", response);
+    await logout();
     navigate("/");
   };
 
