@@ -1,9 +1,11 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import "./Header.css";
 
-const Header = () => {
+const Header = ({ showBack } = {}) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { logout } = useAuth();
   
   const handleLogout = async () => {
@@ -27,7 +29,19 @@ const Header = () => {
   return (
     <div>
       <header className="dashboard-header">
-        <div className="header-left"></div>
+        <div className="header-left">
+          {(showBack ?? (location.pathname !== "/dashboard" && location.pathname !== "/")) ? (
+            <button
+              className="back-btn"
+              onClick={() => navigate(-1)}
+              aria-label="Go back"
+              title="Back"
+              type="button"
+            >
+              ←
+            </button>
+          ) : null}
+        </div>
         <div className="header-right">
           {/* <button className="logout-btn" onClick={() => navigate("/")}>
             <span className="logout-icon"></span> Change Password

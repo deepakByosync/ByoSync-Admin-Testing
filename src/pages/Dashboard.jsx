@@ -57,7 +57,7 @@ const Dashboard = () => {
             </div> */}
             <button
               className="view-btn"
-              onClick={() => navigate("/top-users?userType=user")}
+              onClick={() => navigate("/top-users?userType=user&limit=10&filter=1&page=1")}
             >
               View More
             </button>

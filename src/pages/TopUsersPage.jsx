@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Header from "../components/Header";
 import { useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
@@ -11,15 +11,55 @@ import { env } from "../utils/config.js";
 const TopUsersPage = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
-  const [limit, setLimit] = useState(10);
-  const [filter, setFilter] = useState(2);
-  const [page, setPage] = useState(1);
+  const location = useLocation();
+  const queryParams = useMemo(
+    () => new URLSearchParams(location.search),
+    [location.search]
+  );
+
+  const userType = queryParams.get("userType"); // e.g., "merchant"
+
+  const parseNum = (v, fallback) => {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : fallback;
+  };
+
+  const [limit, setLimit] = useState(() => parseNum(queryParams.get("limit"), 10));
+  const [filter, setFilter] = useState(() => parseNum(queryParams.get("filter"), 2));
+  const [page, setPage] = useState(() => parseNum(queryParams.get("page"), 1));
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
-  const location = useLocation();
-  const queryParams = new URLSearchParams(location.search);
-  const userType = queryParams.get("userType"); // e.g., "merchant"
   const COLORS = ["#ef4444", "#22c55e", "#ff00c3ff"];
+
+  // Sync state from URL (e.g., when user presses browser back)
+  useEffect(() => {
+    const qLimit = parseNum(queryParams.get("limit"), 10);
+    const qFilter = parseNum(queryParams.get("filter"), 2);
+    const qPage = parseNum(queryParams.get("page"), 1);
+
+    if (qLimit !== limit) setLimit(qLimit);
+    if (qFilter !== filter) setFilter(qFilter);
+    if (qPage !== page) setPage(qPage);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.search]);
+
+  // Persist state into URL so it doesn't reset on navigation
+  useEffect(() => {
+    if (!userType) return;
+    const params = new URLSearchParams(location.search);
+    params.set("userType", userType);
+    params.set("limit", String(limit));
+    params.set("filter", String(filter));
+    params.set("page", String(page));
+
+    const nextSearch = `?${params.toString()}`;
+    if (nextSearch !== location.search) {
+      navigate(
+        { pathname: location.pathname, search: nextSearch },
+        { replace: true }
+      );
+    }
+  }, [userType, limit, filter, page, location.pathname, location.search, navigate]);
 
   useEffect(() => {
     // ye function tab chalega jab page (component) load hoga
@@ -51,11 +91,11 @@ const TopUsersPage = () => {
             ? apiTotalPages
             : Number(apiTotalPages) || 1
         );
-        setPage(
+        const nextPage =
           typeof apiCurrentPage === "number"
             ? apiCurrentPage
-            : Number(apiCurrentPage) || 1
-        );
+            : Number(apiCurrentPage) || 1;
+        if (nextPage !== page) setPage(nextPage);
       } catch (err) {
         console.error("Error fetching stats:", err);
         setUser({ count: 0, topUsers: [] });
@@ -142,6 +182,7 @@ const TopUsersPage = () => {
             <option value={20}>20</option>
             <option value={40}>40</option>
             <option value={50}>50</option>
+            <option value={100}>100</option>
           </select>
           {loading ? <span className="topusers-loading">Loading…</span> : null}
         </div>
