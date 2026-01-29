@@ -39,6 +39,7 @@ const Logs = () => {
   const colorForType = (type, idx) => {
     const t = String(type || "").toUpperCase();
     if (t.includes("SUCCESS")) return "#22c55e";
+    if (t.includes("PERFORMANCE")) return "#22c55e";
     if (t.includes("BAD_REQUEST")) return "#ff00c3ff";
     if (t.includes("SERVER_ERROR") || t === "ERROR") return "#ef4444";
     if (t.includes("API_CALL")) return "#3b82f6";
