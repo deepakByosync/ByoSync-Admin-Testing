@@ -3,6 +3,10 @@
   width: 100vw;
   min-height: 100vh;
   font-family: "Poppins", sans-serif;
+
+  padding: 24px 16px;   /* PERMANENT padding */
+  box-sizing: border-box;
+  
 }
 
 .delete-user-page .toast {
@@ -19,13 +23,16 @@
 }
 
 .delete-user-card {
-  width: 680px;
-  margin: 32px auto;
+  width: 100%;
+  max-width: 760px;
+  
+  margin: 24px auto;
   background: #ffffff;
   border-radius: 12px;
   text-align: center;
   padding: 32px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-sizing: border-box;
 }
 
 .page-title {
@@ -36,6 +43,7 @@
 
 .helper {
   margin: 0 0 18px;
+  margin-bottom: 24px;
   font-size: 13px;
   color: #334155;
   line-height: 1.35;
@@ -45,7 +53,7 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-bottom: 14px;
+  margin-bottom: 24px;
   color: #0f172a;
   text-align: left;
 }
@@ -68,7 +76,7 @@
 .actions {
   display: flex;
   justify-content: flex-end;
-  margin-top: 10px;
+  margin-top: 28px;
 }
 
 .danger-btn {
@@ -111,3 +119,17 @@
 }
 
 
+@media (max-width: 640px) {
+  .delete-user-card {
+    padding: 24px;
+  }
+
+  .actions {
+    justify-content: center;
+  }
+
+  .danger-btn {
+    width: 100%;
+    padding: 14px;
+  }
+}
