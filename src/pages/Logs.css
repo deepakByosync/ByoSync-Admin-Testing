@@ -81,23 +81,34 @@
 
 .logs-summary-body {
   display: flex;
-  justify-content: space-between;
+  /* justify-content: space-between; */
+  flex-direction: column;
   align-items: center;
   gap: 18px;
   overflow-x: auto;
 }
 
 .logs-summary-chart {
-  flex: 0 0 auto;
+  /* flex: 0 0 auto; */
+  display: flex;
+  justify-content: center;
+  width: 100%;
 }
 
 .logs-percent-list {
-  flex: 1;
+  /* flex: 1;
   min-width: 220px;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 10px;
-  padding-right: 6px;
+  align-items: center;
+  padding-right: 6px; */
+
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
 }
 
 .logs-percent-row {
