@@ -175,7 +175,7 @@ const Logs = () => {
                     nameKey="name"
                     cx="50%"
                     cy="50%"
-                    outerRadius={80}
+                    outerRadius={90}
                     labelLine={false}
                   >
                     {pieWithPercent.map((entry, index) => (
@@ -186,7 +186,7 @@ const Logs = () => {
                     ))}
                   </Pie>
                   <Tooltip />
-                  <Legend />
+                  <Legend layout="vertical" align="right" verticalAlign="right"/>
                 </PieChart>
               </div>
 
