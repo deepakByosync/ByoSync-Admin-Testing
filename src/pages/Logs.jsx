@@ -1,7 +1,19 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Header from "../components/Header";
 import { useLocation } from "react-router-dom";
-import { PieChart, Pie, Cell, Legend, Tooltip } from "recharts";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
+  Tooltip,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  ResponsiveContainer,
+} from "recharts";
 import axios from "axios";
 import { env } from "../utils/config.js";
 import "./Logs.css"; // custom css styling
@@ -10,12 +22,16 @@ const Logs = () => {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const data = queryParams.get("log"); // e.g., "hello"
+  const isApp = String(data || "").toUpperCase() === "APP";
   const [logs, setLogs] = useState([]);
-  const [filter, setFilter] = useState(30);
+  // filter = "10" | "15" | "30" | "all"
+  const [filter, setFilter] = useState("30");
   const [message, setMessage] = useState("");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [loading, setLoading] = useState(false);
+  const [loadingLogs, setLoadingLogs] = useState(false);
+  const [loadingAppStats, setLoadingAppStats] = useState(false);
+  const [appStats, setAppStats] = useState(null);
 
   const formatType = (type) => {
     if (!type) return "Unknown";
@@ -76,12 +92,48 @@ const Logs = () => {
   }, [pieData]);
 
   useEffect(() => {
-    const fetchLogs = async () => {
-      setLoading(true);
+    if (!isApp) return;
+
+    const fetchAppLoginLogStats = async () => {
+      setLoadingAppStats(true);
       try {
+        const res = await axios.get(
+          `${env.BASE_URL}/admin/app-login-log-stats?days=${encodeURIComponent(
+            String(filter)
+          )}`,
+          { withCredentials: true }
+        );
+
+        // Support multiple response shapes:
+        // { data: { ...stats } } OR { data: { data: { ...stats } } }
+        const stats = res?.data?.data?.data ?? res?.data?.data ?? null;
+        setAppStats(stats);
+        setMessage(res?.data?.message || "");
+      } catch (err) {
+        console.error("Error fetching APP login log stats:", err);
+        setAppStats(null);
+      } finally {
+        setLoadingAppStats(false);
+      }
+    };
+
+    fetchAppLoginLogStats();
+  }, [isApp, filter]);
+
+  useEffect(() => {
+    const fetchLogs = async () => {
+      setLoadingLogs(true);
+      try {
+        const numericFilter = filter === "all" ? null : Number(filter);
+        const safeFilter = Number.isFinite(numericFilter) ? numericFilter : 30;
+        const payload = {
+          form: data,
+          page,
+          ...(filter === "all" ? {} : { filter: safeFilter }),
+        };
         const res = await axios.post(
           `${env.BASE_URL}/admin/get-all-logs`,
-          { form: data, filter, page },
+          payload,
           { withCredentials: true }
         );
         console.log(res);
@@ -92,12 +144,12 @@ const Logs = () => {
       } catch (err) {
         console.error("Error fetching logs:", err);
       } finally {
-        setLoading(false); // Set loading to false after the request completes
+        setLoadingLogs(false); // Set loading to false after the request completes
       }
     };
 
     fetchLogs();
-  }, [data, filter, page]);
+  }, [isApp, data, filter, page]);
 
   useEffect(() => {
     if (message) {
@@ -123,27 +175,36 @@ const Logs = () => {
         {/* Filter Buttons */}
         <div className="filter-sections">
           <button
-            className={`filter-btn ${filter === 10 ? "active" : ""}`}
+            className={`filter-btn ${filter == "all" ? "active" : ""}`}
             onClick={() => {
-              setFilter(10);
+              setFilter("all");
+              setPage(1);
+            }}
+          >
+            All
+          </button>
+          <button
+            className={`filter-btn ${filter === "10" ? "active" : ""}`}
+            onClick={() => {
+              setFilter("10");
               setPage(1);
             }}
           >
             10 Days
           </button>
           <button
-            className={`filter-btn ${filter === 15 ? "active" : ""}`}
+            className={`filter-btn ${filter === "15" ? "active" : ""}`}
             onClick={() => {
-              setFilter(15);
+              setFilter("15");
               setPage(1);
             }}
           >
             15 Days
           </button>
           <button
-            className={`filter-btn ${filter === 30 ? "active" : ""}`}
+            className={`filter-btn ${filter === "30" ? "active" : ""}`}
             onClick={() => {
-              setFilter(30);
+              setFilter("30");
               setPage(1);
             }}
           >
@@ -167,27 +228,98 @@ const Logs = () => {
             <div className="no-logs">No logs to summarize.</div>
           ) : (
             <div className="logs-summary-body">
-              <div className="logs-summary-chart">
-                <PieChart width={320} height={220}>
-                  <Pie
-                    data={pieWithPercent}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={90}
-                    labelLine={false}
-                  >
-                    {pieWithPercent.map((entry, index) => (
-                      <Cell
-                        key={`cell-${entry.rawName || entry.name}-${index}`}
-                        fill={colorForType(entry.rawName || entry.name, index)}
-                      />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                  <Legend layout="vertical" align="right" verticalAlign="right"/>
-                </PieChart>
+              <div className="logs-summary-top">
+                <div className="logs-summary-chart logs-summary-pie">
+                  <PieChart width={320} height={220}>
+                    <Pie
+                      data={pieWithPercent}
+                      dataKey="value"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={90}
+                      labelLine={false}
+                    >
+                      {pieWithPercent.map((entry, index) => (
+                        <Cell
+                          key={`cell-${entry.rawName || entry.name}-${index}`}
+                          fill={colorForType(entry.rawName || entry.name, index)}
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                    <Legend
+                      layout="vertical"
+                      align="right"
+                      verticalAlign="right"
+                    />
+                  </PieChart>
+                </div>
+
+                {isApp ? (
+                  <div className="logs-app-barchart">
+                    <div
+                      className="logs-summary-meta"
+                      style={{ marginBottom: 8, textAlign: "center" }}
+                    >
+                      Success: <b>{appStats?.loginSuccessCount ?? 0}</b> | Failed:{" "}
+                      <b>{appStats?.loginFailedCount ?? 0}</b>
+                    </div>
+
+                    <div style={{ width: "100%", height: 220 }}>
+                      {loadingAppStats ? (
+                        <div className="loading">Loading...</div>
+                      ) : !appStats ? (
+                        <div className="no-logs">No APP stats available.</div>
+                      ) : (
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart
+                            data={[
+                              {
+                                name: "Success",
+                                count: Number(appStats?.loginSuccessCount) || 0,
+                              },
+                              {
+                                name: "Failed",
+                                count: Number(appStats?.loginFailedCount) || 0,
+                              },
+                            ]}
+                            margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+                          >
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="name" />
+                            <YAxis allowDecimals={false} />
+                            <Tooltip />
+                            <Legend />
+                            <Bar dataKey="count" name="Count">
+                              {[
+                                {
+                                  name: "Success",
+                                  count:
+                                    Number(appStats?.loginSuccessCount) || 0,
+                                },
+                                {
+                                  name: "Failed",
+                                  count:
+                                    Number(appStats?.loginFailedCount) || 0,
+                                },
+                              ].map((entry, idx) => (
+                                <Cell
+                                  key={`bar-cell-${entry.name}-${idx}`}
+                                  fill={
+                                    entry.name === "Success"
+                                      ? "#22c55e"
+                                      : "#ef4444"
+                                  }
+                                />
+                              ))}
+                            </Bar>
+                          </BarChart>
+                        </ResponsiveContainer>
+                      )}
+                    </div>
+                  </div>
+                ) : null}
               </div>
 
               <div className="logs-percent-list">
@@ -195,7 +327,9 @@ const Logs = () => {
                   <div
                     key={`pct-${item.rawName || item.name}-${idx}`}
                     className="logs-percent-row"
-                    style={{ color: colorForType(item.rawName || item.name, idx) }}
+                    style={{
+                      color: colorForType(item.rawName || item.name, idx),
+                    }}
                   >
                     {item.name}: {Math.round(item.percent)}%
                   </div>
@@ -210,7 +344,7 @@ const Logs = () => {
           <h3>API Logs</h3>
           <p className="subtitle">Recent API call activities</p>
 
-          {loading ? (
+          {loadingLogs ? (
             <div className="loading">Loading...</div> // Loading spinner/message
           ) : logs.length === 0 ? (
             <p className="no-logs">No logs available.</p>
@@ -243,7 +377,7 @@ const Logs = () => {
 
           <div className="pagination">
             <button
-              disabled={page === 1 || loading} // Disable button if on the first page or while loading
+              disabled={page === 1 || loadingLogs} // Disable button if on the first page or while loading
               onClick={() => setPage(page - 1)}
             >
               Prev
@@ -254,7 +388,7 @@ const Logs = () => {
             </span>
 
             <button
-              disabled={page === totalPages || loading} // Disable button if on the last page or while loading
+              disabled={page === totalPages || loadingLogs} // Disable button if on the last page or while loading
               onClick={() => setPage(page + 1)}
             >
               Next
