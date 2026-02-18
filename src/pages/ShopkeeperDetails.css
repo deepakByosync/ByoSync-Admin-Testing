@@ -233,12 +233,73 @@ table td {
   margin: 20px 0;
 }
 
+.sk-pie-wrap {
+  width: 230px;
+  height: 230px;
+}
+
 .chart-text {
   display: flex;
   flex-direction: column;
   gap: 8px;
   font-size: 14px;
   font-weight: 500;
+}
+
+.api-logs-card {
+  overflow-x: auto;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 640px) {
+  .shopkeeper-container {
+    padding: 14px 12px;
+  }
+
+  .card {
+    padding: 16px;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-sections {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .filter-btn {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .chart-section {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .sk-pie-wrap {
+    width: 100%;
+    max-width: 320px;
+    height: 220px;
+  }
+
+  .chart-text {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px 12px;
+  }
+
+  .api-logs-card table {
+    min-width: 560px;
+  }
+
+  .pagination {
+    flex-wrap: wrap;
+  }
 }
 
 .pagination {

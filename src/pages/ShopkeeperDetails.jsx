@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Header from "../components/Header";
-import { PieChart, Pie, Cell, Legend } from "recharts";
+import { PieChart, Pie, Cell, Legend, ResponsiveContainer } from "recharts";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./ShopkeeperDetails.css";
 import axios from "axios";
@@ -16,6 +16,7 @@ const ShopkeeperDetails = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   // Get userId from query param
   const queryParams = new URLSearchParams(location.search);
@@ -55,6 +56,19 @@ const ShopkeeperDetails = () => {
       return () => clearTimeout(timer);
     }
   }, [message]);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 640px)");
+    const onChange = () => setIsMobile(Boolean(mq.matches));
+    onChange();
+
+    if (typeof mq.addEventListener === "function") {
+      mq.addEventListener("change", onChange);
+      return () => mq.removeEventListener("change", onChange);
+    }
+    mq.addListener(onChange);
+    return () => mq.removeListener(onChange);
+  }, []);
 
   useEffect(() => {
     console.log("mess", message);
@@ -193,27 +207,31 @@ const ShopkeeperDetails = () => {
             </div>
           </div> */}
           <div className="chart-section">
-            <PieChart width={230} height={230}>
-              <Pie
-                data={getPieData(user.performance)}
-                dataKey="value"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                outerRadius={80}
-                labelLine={false}
-              >
-                {getPieData(user.performance)
-                  .filter((entry) => entry.name !== "api")
-                  .map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={COLORS[index % COLORS.length]}
-                    />
-                  ))}
-              </Pie>
-              <Legend />
-            </PieChart>
+            <div className="sk-pie-wrap">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={getPieData(user.performance)}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="45%"
+                    outerRadius={isMobile ? 70 : 80}
+                    labelLine={false}
+                  >
+                    {getPieData(user.performance)
+                      .filter((entry) => entry.name !== "api")
+                      .map((entry, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={COLORS[index % COLORS.length]}
+                        />
+                      ))}
+                  </Pie>
+                  {isMobile ? null : <Legend />}
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
 
             <div className="chart-text">
               <p style={{ color: "#22c55e" }}>Success: {successPercent}%</p>
@@ -225,7 +243,7 @@ const ShopkeeperDetails = () => {
         </div>
 
         {/* API Logs */}
-        <div className="card">
+        <div className="card api-logs-card">
           <h3>API Logs</h3>
           <p className="subtitle">Recent API call activities.</p>
           {loading ? (

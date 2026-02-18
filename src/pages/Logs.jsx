@@ -26,6 +26,7 @@ const Logs = () => {
   const [logs, setLogs] = useState([]);
   // filter = "10" | "15" | "30" | "all"
   const [filter, setFilter] = useState("30");
+  const [isMobile, setIsMobile] = useState(false);
   const [message, setMessage] = useState("");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -94,6 +95,20 @@ const Logs = () => {
       percent: total > 0 ? ((x.value || 0) / total) * 100 : 0,
     }));
   }, [pieData]);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 640px)");
+    const onChange = () => setIsMobile(Boolean(mq.matches));
+    onChange();
+
+    // modern + fallback
+    if (typeof mq.addEventListener === "function") {
+      mq.addEventListener("change", onChange);
+      return () => mq.removeEventListener("change", onChange);
+    }
+    mq.addListener(onChange);
+    return () => mq.removeListener(onChange);
+  }, []);
 
   // Map log type -> same color used in PieChart (for this page of logs)
   const typeColorMap = useMemo(() => {
@@ -261,7 +276,7 @@ const Logs = () => {
             <div className="logs-summary-body">
               <div className="logs-summary-top">
                 <div className="logs-summary-chart logs-summary-pie">
-                  <div style={{ width: "100%", height: 260 }}>
+                  <div className="logs-pie-wrap">
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
@@ -282,13 +297,15 @@ const Logs = () => {
                           ))}
                         </Pie>
                         <Tooltip />
-                        <Legend
-                          layout="horizontal"
-                          align="center"
-                          verticalAlign="bottom"
-                          iconType="circle"
-                          wrapperStyle={{ fontSize: 12 }}
-                        />
+                        {isMobile ? null : (
+                          <Legend
+                            layout="horizontal"
+                            align="center"
+                            verticalAlign="bottom"
+                            iconType="circle"
+                            wrapperStyle={{ fontSize: 12 }}
+                          />
+                        )}
                       </PieChart>
                     </ResponsiveContainer>
                   </div>
@@ -304,7 +321,26 @@ const Logs = () => {
                       <b>{appStats?.loginFailedCount ?? 0}</b>
                     </div>
 
-                    <div style={{ width: "100%", height: 220 }}>
+                    {isMobile ? (
+                      <div
+                        className="logs-percent-list"
+                        style={{ marginBottom: 8 }}
+                      >
+                        {pieWithPercent.map((item, idx) => (
+                          <div
+                            key={`pct-app-${item.rawName || item.name}-${idx}`}
+                            className="logs-percent-row"
+                            style={{
+                              color: colorForType(item.rawName || item.name, idx),
+                            }}
+                          >
+                            {item.name}: {Math.round(item.percent)}%
+                          </div>
+                        ))}
+                      </div>
+                    ) : null}
+
+                    <div className="logs-bar-wrap">
                       {loadingAppStats ? (
                         <div className="loading">Loading...</div>
                       ) : !appStats ? (
@@ -328,7 +364,6 @@ const Logs = () => {
                             <XAxis dataKey="name" />
                             <YAxis allowDecimals={false} />
                             <Tooltip />
-                            <Legend />
                             <Bar dataKey="count" name="Count">
                               {[
                                 {
@@ -360,19 +395,21 @@ const Logs = () => {
                 ) : null}
               </div>
 
-              <div className="logs-percent-list">
-                {pieWithPercent.map((item, idx) => (
-                  <div
-                    key={`pct-${item.rawName || item.name}-${idx}`}
-                    className="logs-percent-row"
-                    style={{
-                      color: colorForType(item.rawName || item.name, idx),
-                    }}
-                  >
-                    {item.name}: {Math.round(item.percent)}%
-                  </div>
-                ))}
-              </div>
+              {isMobile ? null : (
+                <div className="logs-percent-list">
+                  {pieWithPercent.map((item, idx) => (
+                    <div
+                      key={`pct-${item.rawName || item.name}-${idx}`}
+                      className="logs-percent-row"
+                      style={{
+                        color: colorForType(item.rawName || item.name, idx),
+                      }}
+                    >
+                      {item.name}: {Math.round(item.percent)}%
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
