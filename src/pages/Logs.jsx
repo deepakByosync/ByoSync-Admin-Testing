@@ -42,14 +42,15 @@ const Logs = () => {
       .join(" ");
   };
 
-  const COLORS = [
-    "#22c55e", // green
-    "#ef4444", // red
-    "#ff00c3ff", // pink
+  // Palette for non-special types (avoid reserved ERROR red to prevent collisions)
+  const FALLBACK_COLORS = [
     "#3b82f6", // blue
     "#7a3cfe", // purple
+    "#06b6d4", // cyan
+    "#f97316", // orange
     "#f59e0b", // amber
     "#10b981", // emerald
+    "#a855f7", // violet
   ];
 
   const colorForType = (type, idx) => {
@@ -60,7 +61,10 @@ const Logs = () => {
     if (t.includes("SERVER_ERROR") || t === "ERROR") return "#ef4444";
     if (t.includes("API_CALL")) return "#3b82f6";
     if (t.includes("MIDDLEWARE_CALL")) return "#7a3cfe";
-    return COLORS[idx % COLORS.length];
+    if (t.includes("CAMERA_EVENT")) return "#7a3cfe";
+    if (t.includes("SCREEN_TRANSITION")) return "#f59e0b";
+    if (t.includes("SCREEN")) return "#f97316";
+    return FALLBACK_COLORS[idx % FALLBACK_COLORS.length];
   };
 
   const pieData = useMemo(() => {
@@ -90,6 +94,33 @@ const Logs = () => {
       percent: total > 0 ? ((x.value || 0) / total) * 100 : 0,
     }));
   }, [pieData]);
+
+  // Map log type -> same color used in PieChart (for this page of logs)
+  const typeColorMap = useMemo(() => {
+    const counts = (logs ?? []).reduce((acc, l) => {
+      const key = l?.type ? String(l.type) : "UNKNOWN";
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {});
+
+    const sortedRaw = Object.entries(counts)
+      .map(([rawName, value]) => ({ rawName, value }))
+      .sort((a, b) => (b.value || 0) - (a.value || 0));
+
+    const MAX_SLICES = 6;
+    const head = sortedRaw.slice(0, MAX_SLICES);
+    const tail = sortedRaw.slice(MAX_SLICES);
+    const othersColor = colorForType("OTHERS", MAX_SLICES);
+
+    const map = {};
+    head.forEach((x, idx) => {
+      map[x.rawName] = colorForType(x.rawName, idx);
+    });
+    tail.forEach((x) => {
+      map[x.rawName] = othersColor;
+    });
+    return map;
+  }, [logs]);
 
   useEffect(() => {
     if (!isApp) return;
@@ -230,30 +261,37 @@ const Logs = () => {
             <div className="logs-summary-body">
               <div className="logs-summary-top">
                 <div className="logs-summary-chart logs-summary-pie">
-                  <PieChart width={320} height={220}>
-                    <Pie
-                      data={pieWithPercent}
-                      dataKey="value"
-                      nameKey="name"
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={90}
-                      labelLine={false}
-                    >
-                      {pieWithPercent.map((entry, index) => (
-                        <Cell
-                          key={`cell-${entry.rawName || entry.name}-${index}`}
-                          fill={colorForType(entry.rawName || entry.name, index)}
+                  <div style={{ width: "100%", height: 260 }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={pieWithPercent}
+                          dataKey="value"
+                          nameKey="name"
+                          cx="50%"
+                          cy="45%"
+                          outerRadius={88}
+                          paddingAngle={2}
+                          labelLine={false}
+                        >
+                          {pieWithPercent.map((entry, index) => (
+                            <Cell
+                              key={`cell-${entry.rawName || entry.name}-${index}`}
+                              fill={colorForType(entry.rawName || entry.name, index)}
+                            />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                        <Legend
+                          layout="horizontal"
+                          align="center"
+                          verticalAlign="bottom"
+                          iconType="circle"
+                          wrapperStyle={{ fontSize: 12 }}
                         />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                    <Legend
-                      layout="vertical"
-                      align="right"
-                      verticalAlign="right"
-                    />
-                  </PieChart>
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
                 </div>
 
                 {isApp ? (
@@ -363,7 +401,14 @@ const Logs = () => {
                   <tr key={i}>
                     {/* <td>{new Date(log.createdAt).toLocaleString()}</td> */}
                     <td>
-                      <span className={`badge ${log.type}`}>
+                      <span
+                        className={`badge ${log.type}`}
+                        style={{
+                          backgroundColor:
+                            typeColorMap[String(log?.type ?? "UNKNOWN")] ||
+                            colorForType(log?.type, i),
+                        }}
+                      >
                         {formatType(log.type)}
                       </span>
                     </td>
