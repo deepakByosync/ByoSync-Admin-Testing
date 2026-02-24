@@ -17,6 +17,15 @@ import {
 import axios from "axios";
 import { env } from "../utils/config.js";
 import "./Logs.css"; // custom css styling
+import {
+  TimelineChart,
+  ActivityFlowChart,
+  HeatmapChart,
+  TopEventsChart,
+  PerfDistChart,
+  UserActivityChart,
+  ErrorTrendChart,
+} from "./Loganalyticsdashboard";
 
 const Logs = () => {
   const location = useLocation();
@@ -182,7 +191,7 @@ const Logs = () => {
           payload,
           { withCredentials: true }
         );
-        console.log(res);
+        console.log("This is the res data", res);
         setLogs(res.data.data.logs || []);
         setMessage(res.data.message);
         setPage(res.data.data.currentPage || 1);
@@ -409,10 +418,18 @@ const Logs = () => {
                     </div>
                   ))}
                 </div>
-              )}
+              )}   
             </div>
           )}
         </div>
+
+        <TimelineChart logs={logs} />
+        <ActivityFlowChart logs={logs} />
+        <HeatmapChart logs={logs} />
+        <TopEventsChart logs={logs} />
+        <PerfDistChart logs={logs} />
+        <UserActivityChart logs={logs} />
+        <ErrorTrendChart logs={logs} />
 
         {/* Logs Table */}
         <div className="logs-table-card">
